@@ -43,3 +43,8 @@ module "dns" {
   # use existing zone
   route53_zone_id = "${var.hosted_zone_id}"
 }
+
+
+output "bucket_arn" {
+  value = "${module.s3_bucket_static_hosting.bucket_arn}"
+}
