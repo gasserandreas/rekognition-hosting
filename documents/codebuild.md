@@ -43,3 +43,5 @@ Environment variables:
 - `S3_DEPLOY_BUCKET`: s3 deployment bucket url
 - `S3_ARTEFACTS_BUCKET`: artefacts archive
 - `DISTRIBUTION_ID`: cloudfront distribution id for environemnt
+- `S3_UTILS_BUCKET`: s3 bucket for utility files and scripts 
+- `ENV_VAR`: specify .env file for given environment

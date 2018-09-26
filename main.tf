@@ -61,11 +61,21 @@ module "static_hosting_test" {
 # build / deployment
 
 module "artefacts" {
-  source = "./artefacts"
+  source = "./s3-bucket"
   app_region       = "${var.app_region}"
   account_id       = "${var.account_id}"
   app_name         = "${var.app_name}"
   root_domain_name = "${var.root_domain_name}"
+  bucket_name = "artefacts"
+}
+
+module "utils" {
+  source = "./s3-bucket"
+  app_region       = "${var.app_region}"
+  account_id       = "${var.account_id}"
+  app_name         = "${var.app_name}"
+  root_domain_name = "${var.root_domain_name}"
+  bucket_name = "utils"
 }
 
 # define code build role
@@ -105,7 +115,9 @@ resource "aws_iam_role_policy" "develop" {
       ],
       "Resource": [
         "${module.static_hosting_test.bucket_arn}",
-        "${module.static_hosting_test.bucket_arn}/*"
+        "${module.static_hosting_test.bucket_arn}/*",
+        "${module.utils.bucket_arn}",
+        "${module.utils.bucket_arn}/*"
       ]
     }
   ]
@@ -150,13 +162,60 @@ resource "aws_iam_role_policy" "master" {
         "${module.static_hosting.bucket_arn}",
         "${module.static_hosting.bucket_arn}/*",
         "${module.artefacts.bucket_arn}",
-        "${module.artefacts.bucket_arn}/*"
+        "${module.artefacts.bucket_arn}/*",
+        "${module.utils.bucket_arn}",
+        "${module.utils.bucket_arn}/*"
       ]
     }
   ]
 }
 POLICY
 }
+
+# # master branch
+# module "codebuild_role_master" {
+#   source = "./codebuild-role"
+#   app_region       = "${var.app_region}"
+#   account_id       = "${var.account_id}"
+#   app_name         = "${var.app_name}"
+#   role_name = "master"
+# }
+
+# # define access policies
+# resource "aws_iam_role_policy" "master" {
+#   role        = "${module.codebuild_role_master.role_name}"
+
+#   policy = <<POLICY
+# {
+#   "Version": "2012-10-17",
+#   "Statement": [
+#     {
+#       "Effect": "Allow",
+#       "Resource": [
+#         "*"
+#       ],
+#       "Action": [
+#         "logs:CreateLogGroup",
+#         "logs:CreateLogStream",
+#         "logs:PutLogEvents"
+#       ]
+#     },
+#     {
+#       "Effect": "Allow",
+#       "Action": [
+#         "s3:*"
+#       ],
+#       "Resource": [
+#         "${module.static_hosting.bucket_arn}",
+#         "${module.static_hosting.bucket_arn}/*",
+#         "${module.artefacts.bucket_arn}",
+#         "${module.artefacts.bucket_arn}/*"
+#       ]
+#     }
+#   ]
+# }
+# POLICY
+# }
 
 # 
 output "codebuild-role-policy-develop" {
