@@ -7,13 +7,16 @@ variable "app_name" {}
 
 variable "root_domain_name" {}
 
+variable "bucket_name" {}
+
+
 resource "aws_s3_bucket" "artefacts_bucket" {
   // bucket name with account id prefix
-  bucket = "${var.account_id}-${var.root_domain_name}-artefacts"
+  bucket = "${var.account_id}-${var.root_domain_name}-${var.bucket_name}"
 
   // Because we want our site to be available on the internet, we set this so
   // anyone can read this bucket.
-  acl = "public-read"
+  # acl = "public-read"
 
   // We also need to create a policy that allows anyone to view the content.
   // This is basically duplicating what we did in the ACL but it's required by
@@ -30,7 +33,7 @@ resource "aws_s3_bucket" "artefacts_bucket" {
         "s3:PutObject",
         "s3:GetObject"
       ],
-      "Resource":["arn:aws:s3:::${var.account_id}-${var.root_domain_name}-artefacts/*"]
+      "Resource":["arn:aws:s3:::${var.account_id}-${var.root_domain_name}-${var.bucket_name}/*"]
     }
   ]
 }
