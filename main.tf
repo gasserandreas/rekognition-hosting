@@ -172,6 +172,51 @@ resource "aws_iam_role_policy" "master" {
 POLICY
 }
 
+# master branch
+module "codebuild_role_master" {
+  source = "./codebuild-role"
+  app_region       = "${var.app_region}"
+  account_id       = "${var.account_id}"
+  app_name         = "${var.app_name}"
+  role_name = "master"
+}
+
+# define access policies
+resource "aws_iam_role_policy" "master" {
+  role        = "${module.codebuild_role_master.role_name}"
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ],
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": [
+        "${module.static_hosting.bucket_arn}",
+        "${module.static_hosting.bucket_arn}/*",
+        "${module.artefacts.bucket_arn}",
+        "${module.artefacts.bucket_arn}/*"
+      ]
+    }
+  ]
+}
+POLICY
+}
+
 # 
 output "codebuild-role-policy-develop" {
   value = "${module.codebuild_role_develop.role_name}"
